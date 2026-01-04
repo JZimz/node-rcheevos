@@ -53,3 +53,21 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Build artifacts
+build/
+prebuilds/
+*.node
+
+# Test files
+test.js
+test.gb
+
+# Claude Code
+.claude/
