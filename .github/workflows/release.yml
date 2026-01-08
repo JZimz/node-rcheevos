@@ -1,0 +1,84 @@
+name: Build Prebuilds and Publish
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  id-token: write  # Required for OIDC
+  contents: read
+
+jobs:
+  prebuild:
+    name: Build prebuilds (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - macos-latest
+          - windows-latest
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build prebuilds
+        run: npm run prebuild
+
+      - name: Upload prebuilds artifact
+        uses: actions/upload-artifact@v6
+        with:
+          name: prebuilds-${{ matrix.os }}
+          path: prebuilds/**
+          if-no-files-found: error
+
+  publish:
+    name: Publish to npm
+    needs: prebuild
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies (no postinstall)
+        run: npm ci --ignore-scripts
+
+      - name: Download prebuild artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: prebuilds-*
+          path: prebuilds
+          merge-multiple: true
+
+      - name: Verify prebuilds
+        run: ls -R prebuilds
+
+      - name: Publish to npm
+        run: npm publish
