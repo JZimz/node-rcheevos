@@ -23,18 +23,18 @@ Comes with pre-built binaries for macOS, Windows, and Linux (both x64 and ARM64)
 ## How to use it
 
 ```javascript
-const { hash } = require('node-rcheevos');
+const { rhash } = require('node-rcheevos');
 
-const md5 = hash(4, '/path/to/game.gb');  // Game Boy
+const md5 = rhash(4, '/path/to/game.gb');  // Game Boy
 console.log(md5);  // "a1b2c3d4e5f6..."
 ```
 
 TypeScript works too:
 
 ```typescript
-import { hash } from 'node-rcheevos';
+import { rhash } from 'node-rcheevos';
 
-const md5 = hash(41, '/path/to/game.iso');  // PSP
+const md5 = rhash(41, '/path/to/game.iso');  // PSP
 ```
 
 CLI if you want to test it quick:
@@ -45,7 +45,7 @@ npx rhash -c 4 /path/to/game.gb
 
 ## API
 
-Just one function: `hash(consoleId, path)`
+Just one function: `rhash(consoleId, path, buffer?)`
 
 Pass it a RetroAchievements console ID (see table below) and the path to your ROM. Returns the MD5 hash as a string. Throws an error if the file doesn't exist or can't be hashed.
 

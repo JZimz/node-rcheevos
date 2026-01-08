@@ -30,6 +30,7 @@
     "node-gyp-build": "^4.8.0"
   },
   "devDependencies": {
+    "@types/node": "^25.0.3",
     "node-gyp": "^10.0.0",
     "prebuildify": "^6.0.0"
   },

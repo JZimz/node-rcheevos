@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { hash } = require('../lib/index.js');
+const { rhash } = require('../lib/index.js');
 const path = require('path');
 
 function printUsage() {
@@ -56,7 +56,7 @@ if (isNaN(consoleId)) {
 const absolutePath = path.resolve(romPath);
 
 try {
-  const result = hash(consoleId, absolutePath);
+  const result = rhash(consoleId, absolutePath);
   console.log(result);
   process.exit(0);
 } catch (error) {
