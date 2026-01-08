@@ -18,7 +18,10 @@
     "install": "node-gyp-build",
     "build": "node-gyp rebuild",
     "prebuild": "prebuildify --napi --strip",
-    "test": "node --test"
+    "test": "node --test",
+    "version:patch": "npm version patch -m \"chore(release): %s\"",
+    "version:minor": "npm version minor -m \"chore(release): %s\"",
+    "version:major": "npm version major -m \"chore(release): %s\""
   },
   "keywords": [
     "retroachievements",
