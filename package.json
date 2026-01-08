@@ -48,6 +48,6 @@
   "gypfile": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jzimz/node-rcheevos.git"
+    "url": "git+https://github.com/JZimz/node-rcheevos.git"
   }
 }
