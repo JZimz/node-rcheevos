@@ -6,6 +6,7 @@ on:
       - 'v*'
 
 permissions:
+  id-token: write  # Required for OIDC
   contents: read
 
 jobs:
@@ -54,9 +55,6 @@ jobs:
     name: Publish to npm
     needs: prebuild
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required for OIDC
-      contents: read
 
     steps:
       - name: Checkout
