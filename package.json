@@ -10,7 +10,8 @@
   "scripts": {
     "install": "node-gyp-build",
     "build": "node-gyp rebuild",
-    "prebuild": "prebuildify --napi --strip"
+    "prebuild": "prebuildify --napi --strip",
+    "test": "node --test"
   },
   "keywords": [
     "retroachievements",
