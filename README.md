@@ -19,14 +19,10 @@ Includes pre-built binaries for macOS, Windows, and Linux (both x64 and ARM64). 
 
 ## Quick Start
 ```javascript
-const { rhash } = require('node-rcheevos');
+const { rhash, ConsoleId } = require('node-rcheevos');
 
-try {
-  const md5 = rhash(4, '/path/to/pokemon-red.gb');
-  console.log(md5); // "a1b2c3d4e5f6..."
-} catch (error) {
-  console.error('Hashing failed:', error.message);
-}
+const md5 = rhash(ConsoleId.GAMEBOY, '/path/to/pokemon-red.gb');
+console.log(md5); // "bb7df04e1b0a2570657527a7e108ae23"
 ```
 
 ## API
@@ -34,7 +30,7 @@ try {
 ### `rhash(consoleId, path, buffer?)`
 
 **Parameters:**
-- `consoleId` (number): RetroAchievements console ID (see table below)
+- `consoleId` (number): RetroAchievements console ID (use `ConsoleId` constants or numeric values)
 - `path` (string): Path to your ROM file
 - `buffer` (Buffer, optional): ROM data if you already have it in memory
 
@@ -42,42 +38,33 @@ try {
 
 **Throws:** Error if the file doesn't exist, can't be read, or the console ID is invalid
 
-### Important: Buffer limitations
+### `ConsoleId`
+
+Exported constants for all console IDs if you prefer named constants over numbers.
+
+```javascript
+const { ConsoleId } = require('node-rcheevos');
+
+console.log(ConsoleId.GAMEBOY);      // 4
+console.log(ConsoleId.PLAYSTATION);  // 12
+console.log(ConsoleId.PSP);          // 41
+```
+
+### Buffer limitations
 
 **Works with buffers** (cartridge-based systems like GB, GBA, NES, SNES):
 ```javascript
 const buffer = fs.readFileSync('/path/to/game.gb');
-const md5 = rhash(4, '/path/to/game.gb', buffer);
+const md5 = rhash(ConsoleId.GAMEBOY, '/path/to/game.gb', buffer);
 ```
 
 **Doesn't work with buffers** (disc-based like PlayStation, PSP, and arcade systems):
 ```javascript
 // Passing a buffer will throw an error - must use file path
-const md5 = rhash(12, '/path/to/game.bin');
+const md5 = rhash(ConsoleId.PLAYSTATION, '/path/to/game.bin');
 ```
 
 Disc-based systems need to read specific sectors from the image file, and arcade systems hash the filename, so they can't work with in-memory buffers.
-
-## Console IDs
-
-Here are the common ones:
-
-| ID | System |
-|----|--------|
-| 1  | Genesis/Mega Drive |
-| 2  | Nintendo 64 |
-| 3  | Super Nintendo |
-| 4  | Game Boy |
-| 5  | Game Boy Advance |
-| 6  | Game Boy Color |
-| 7  | NES/Famicom |
-| 11 | Game Gear |
-| 12 | PlayStation |
-| 27 | PlayStation Portable |
-| 38 | Nintendo 3DS |
-| 39 | Dreamcast |
-
-Full list in [rc_consoles.h](https://github.com/RetroAchievements/rcheevos/blob/develop/include/rc_consoles.h)
 
 ## CLI Usage
 ```bash
