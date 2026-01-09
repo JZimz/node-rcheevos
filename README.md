@@ -1,57 +1,66 @@
 # node-rcheevos
 
-> **⚠️ Work in Progress** - This works and I'm using it in ROMie, but it's early. Only macOS ARM64 binaries are pre-built right now. Other platforms will compile from source (need build tools) until I set up CI for cross-platform builds.
+[![npm version](https://badge.fury.io/js/node-rcheevos.svg)](https://www.npmjs.com/package/node-rcheevos)
 
-Generate RetroAchievements hashes for ROMs in Node.js. Uses the official [rcheevos](https://github.com/RetroAchievements/rcheevos) C library, so you get the same hashes as RetroArch and other emulators.
+Generate RetroAchievements hashes for ROMs in Node.js. Uses the same [rcheevos](https://github.com/RetroAchievements/rcheevos) C library that RetroArch uses, so your hashes will match exactly.
 
-Built this for better RetroAchievements support in [ROMie](https://github.com/JZimz/romie), but it works anywhere you need to hash ROMs in Node.
+## Why not just reimplement the hashing in JavaScript?
 
-## Why this exists
+I tried that first. Each console has its own special hashing rules - NES strips the iNES header, SNES might have a 512-byte header to skip, PlayStation has to parse `SYSTEM.CNF` to find which executable to hash, N64 needs byte-order conversion depending on the ROM format. The [RetroAchievements docs](https://docs.retroachievements.org/developer-docs/game-identification.html) explain all this, but keeping JavaScript implementations updated for 40+ systems when RA changes their logic is a pain. Easier to just wrap their C library directly.
 
-If you've tried adding RetroAchievements to an Electron app, you've probably hit this: WASM libraries don't work in the main process. And reimplementing the hashing logic in JavaScript is a recipe for subtle bugs when the algorithm changes.
+Built this for [ROMie](https://github.com/JZimz/romie) but figured it's useful standalone.
 
-This wraps the official C library as a native Node addon, so it just works. Same hashing logic as the source of truth, supports all the systems RetroAchievements does (Game Boy, NES, SNES, PlayStation, PSP, you name it).
-
-## Install
-
+## Installation
 ```bash
 npm install node-rcheevos
 ```
 
-Comes with pre-built binaries for macOS, Windows, and Linux (both x64 and ARM64). If you're on something else, it'll build from source—just need the usual build tools (node-gyp stuff).
+Includes pre-built binaries for macOS, Windows, and Linux (both x64 and ARM64). If you're on something else, it'll build from source automatically.
 
-## How to use it
-
+## Quick Start
 ```javascript
 const { rhash } = require('node-rcheevos');
 
-const md5 = rhash(4, '/path/to/game.gb');  // Game Boy
-console.log(md5);  // "a1b2c3d4e5f6..."
-```
-
-TypeScript works too:
-
-```typescript
-import { rhash } from 'node-rcheevos';
-
-const md5 = rhash(41, '/path/to/game.iso');  // PSP
-```
-
-CLI if you want to test it quick:
-
-```bash
-npx rhash -c 4 /path/to/game.gb
+try {
+  const md5 = rhash(4, '/path/to/pokemon-red.gb');
+  console.log(md5); // "a1b2c3d4e5f6..."
+} catch (error) {
+  console.error('Hashing failed:', error.message);
+}
 ```
 
 ## API
 
-Just one function: `rhash(consoleId, path, buffer?)`
+### `rhash(consoleId, path, buffer?)`
 
-Pass it a RetroAchievements console ID (see table below) and the path to your ROM. Returns the MD5 hash as a string. Throws an error if the file doesn't exist or can't be hashed.
+**Parameters:**
+- `consoleId` (number): RetroAchievements console ID (see table below)
+- `path` (string): Path to your ROM file
+- `buffer` (Buffer, optional): ROM data if you already have it in memory
+
+**Returns:** MD5 hash as a lowercase hex string
+
+**Throws:** Error if the file doesn't exist, can't be read, or the console ID is invalid
+
+### Important: Buffer limitations
+
+**Works with buffers** (cartridge-based systems like GB, GBA, NES, SNES):
+```javascript
+const buffer = fs.readFileSync('/path/to/game.gb');
+const md5 = rhash(4, '/path/to/game.gb', buffer);
+```
+
+**Doesn't work with buffers** (disc-based like PlayStation, PSP, and arcade systems):
+```javascript
+// Passing a buffer will throw an error - must use file path
+const md5 = rhash(12, '/path/to/game.bin');
+```
+
+Disc-based systems need to read specific sectors from the image file, and arcade systems hash the filename, so they can't work with in-memory buffers.
 
 ## Console IDs
 
-Here are the common ones (full list at [docs.retroachievements.org](https://docs.retroachievements.org/Console-IDs/)):
+Here are the common ones:
 
 | ID | System |
 |----|--------|
@@ -68,10 +77,14 @@ Here are the common ones (full list at [docs.retroachievements.org](https://docs
 | 38 | Nintendo 3DS |
 | 39 | Dreamcast |
 
-## Building from source
+Full list in [rc_consoles.h](https://github.com/RetroAchievements/rcheevos/blob/develop/include/rc_consoles.h)
 
-If you want to hack on it:
+## CLI Usage
+```bash
+npx rhash -c 4 /path/to/game.gb
+```
 
+## Building from Source
 ```bash
 git clone --recursive https://github.com/jzimz/node-rcheevos.git
 cd node-rcheevos
@@ -79,8 +92,8 @@ npm install
 npm run build
 ```
 
-The `--recursive` flag pulls in the rcheevos submodule. Without it, you won't have the C library to build against.
+The `--recursive` flag is important - it pulls in the rcheevos library. Without it, you won't have anything to build against.
 
 ## License
 
-MIT. The rcheevos library this wraps is also MIT.
+MIT. The rcheevos library is also MIT.
